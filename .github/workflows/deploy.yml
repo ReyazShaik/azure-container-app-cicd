@@ -16,16 +16,17 @@ jobs:
     steps:
 
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Login to Azure
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    # ✅ Use ACR login via Azure CLI (no password needed)
     - name: Login to ACR
       run: |
-        echo ${{ secrets.ACR_PASSWORD }} | docker login $REGISTRY -u ${{ secrets.ACR_USERNAME }} --password-stdin
+        az acr login --name $(echo $REGISTRY | cut -d'.' -f1)
 
     - name: Build image
       run: |
@@ -39,5 +40,5 @@ jobs:
       run: |
         az containerapp update \
           --name reyacont \
-          --resource-group <RG_NAME> \
+          --resource-group test-rg \
           --image $REGISTRY/$IMAGE_NAME:${{ github.sha }}
